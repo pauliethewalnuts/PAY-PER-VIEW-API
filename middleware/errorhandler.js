@@ -1,10 +1,11 @@
 const errorHandlerMiddleware = (err,req,res,next) =>{
+    // console.log(err)
     let customError = {
         msg: err.message || 'Something Went Wrong, Please try again Later',
         statusCode: err.statusCode || 500
     }
     if(err.name === 'CastError'){
-        customError.msg = `No job found with id: ${err.value}`
+        customError.msg = `No content found with id: ${err.value._id}`
         customError.statusCode = 404
     }
 

@@ -1,7 +1,9 @@
 const express = require('express')
-const content = require('../controllers/content')
+const {createContent,getPurchasedContent,getContent,getMyContent, updateContent,deleteContent}= require('../controllers/content')
 const router = express.Router()
 
-router.route('/premcontent').get(content)
+router.route('/').post(createContent).get(getContent)
+router.route('/me').get(getMyContent)
+router.route('/:id').get(getPurchasedContent).patch(updateContent).delete(deleteContent)
 
 module.exports = router
