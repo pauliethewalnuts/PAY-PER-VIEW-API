@@ -5,7 +5,7 @@ const purchaseQueue = require('../queues/purchaseQueue')
 
 const purchase = async (req,res) =>{
     const {id} = req.params
-    const {userId,name,role}= req.user 
+    const {userId,name}= req.user 
     const content = await Content.findById({_id:id})
     if(!content){
         throw new BadRequestError(`Can't purchase as no content with id ${id} has been found`)

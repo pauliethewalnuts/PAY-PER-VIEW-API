@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "worker": "nodemon workers/purchaseWorker.js",
-    "dev": "concurrently \"npm run start\" \"npm run worker\"",
+    "purchase-worker": "nodemon workers/purchaseWorker.js",
+    "email-worker": "nodemon workers/sendEmailWorker.js",
+    "dev": "concurrently \"npm run start\" \"npm run purchase-worker\" \"npm run email-worker\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,11 +17,15 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.78.0",
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.6.3"
+    "mongoose": "^9.6.3",
+    "multer": "^2.1.1",
+    "nodemailer": "^9.0.1"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

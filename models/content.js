@@ -15,15 +15,19 @@ const ContentSchema = mongoose.Schema({
         type: Number,
         required: [true,"Please provide the price you want to charge"]
     },
-    images:{
-        type: [String],
-        required: [true, "Please provide the image"]
-    },
+    images:
+        [{
+            url: String,
+            public_id: String
+        }],
     uploadedBy:{
         type: mongoose.Types.ObjectId,
         ref:"User",
         required: [true,'Please provide the user']
-    }
+    },
 })
+
+ContentSchema.index({ uploadedBy: 1 });
+ContentSchema.index({ price: 1 });
 
 module.exports = mongoose.model('Content',ContentSchema)

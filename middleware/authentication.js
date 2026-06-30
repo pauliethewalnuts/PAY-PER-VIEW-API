@@ -9,7 +9,7 @@ const authenticationMiddleware = async (req,res,next) =>{
     const token = authorization.split(' ')[1]
     try {
         const info = await jwt.verify(token,process.env.JWT_SECRET)
-        req.user = {userId:info.userId,name:info.name,role:info.role}
+        req.user = {userId:info.userId,name:info.name,email:info.email}
         next()
     } catch (error) {
         throw new UnauthorizedError(error.message)

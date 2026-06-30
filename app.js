@@ -6,12 +6,13 @@ const notFound = require('./middleware/notFound')
 const errorHandlerMiddleware = require('./middleware/errorhandler')
 const authenticationMiddleware = require('./middleware/authentication')
 const connectDB = require('./db/connect')
+const cors = require('cors')
 
 require('dotenv').config()
 
 const app = express()
 
-
+app.use(cors())
 app.get('/',(req,res)=>{
     res.send('Pay-Per-View API')
 })
