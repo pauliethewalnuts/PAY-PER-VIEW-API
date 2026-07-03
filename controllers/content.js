@@ -5,30 +5,49 @@ const BadRequestError = require('../errors/indexError')
 const { deserialize } = require('mongodb')
 const uploadToCloudinary = require('../utils/uploadToCloudinary')
 const cloudinary = require('../config/cloudinary')
+const { tryCatch } = require('bullmq')
+const CustomAPIError = require('../errors/customError')
 
 const createContent = async (req,res) =>{
-    const {userId,name}= req.user
+    const {userId,userName}= req.user
     const {title,description,price} = req.body
     if(!title || !price){
         throw new BadRequestError('Please enter the details')
     }
-
-    const imageUrls = []
-    for (const file of req.files){
-        const result = await uploadToCloudinary(file.buffer,name,userId)
-        imageUrls.push({url:result.secure_url, public_id: result.public_id})
+    if(!req.files || req.files.length === 0){
+        throw new BadRequestError('Please upload the images')
     }
+    const imageUrls = []
+    const content = new Content({title,description,price,uploadedBy: userId})
+    try {
+        await content.validate()
 
-    const content = await Content.create({title,description,price,images:imageUrls,uploadedBy:userId})
-    res.status(201).json({success:true,msg: "Upload Successful",content})
+        for (const file of req.files){
+            const result = await uploadToCloudinary(file.buffer,userName,userId)
+            imageUrls.push({url:result.secure_url, public_id: result.public_id})
+        }
+        content.images = imageUrls
+
+        await content.save()
+    } catch (error) {
+        for(const image of imageUrls){
+            try {
+                await cloudinary.uploader.destroy(image.public_id)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        throw error
+    }
+    res.status(201).json({success:true,msg: "Upload Successful"})
 }
 
 const getPurchasedContent = async(req,res) =>{
-    const {userId,name} = req.user
+    const {userId} = req.user
 
     const {id} = req.params
 
-    const content = await Content.findById(id)
+    const content = await Content.findById(id).populate('uploadedBy', "userName")
 
     if(!content){
         throw new BadRequestError(`No content with id ${id} Found`)
@@ -68,21 +87,47 @@ const getContent = async (req,res) =>{
         }
     }
 
-    const content = await Content.find(queryFields).select('title description price uploadedBy')
+    const content = await Content.find(queryFields).select('title description price images uploadedBy').populate('uploadedBy', 'userName profileImage')
+        
+
+    const data = content.map((item)=>({
+        _id: item._id,
+        title: item.title,
+        description: item.description,
+        price: item.price,
+        uploadedBy: {
+            profileImage:{
+                url: item.uploadedBy.profileImage.url
+            },
+            _id: item.uploadedBy._id,
+            userName: item.uploadedBy.userName
+        },
+        preview: cloudinary.url(item.images[0].public_id,{
+            secure: true,
+            transformation:[
+                {
+                    width: 340,
+                    height: 220,
+                    crop: 'fill'
+                },
+                {
+                    quality: "auto:low"
+                },
+                // {
+                //     overlay: "watermark_gq3zmr",
+                //     gravity: "center",
+                //     opacity: 50
+                // }
+            ]
+        })
+    }))
     
-    // const new_content = content.map((item)=>({
-    //     id: item._id,
-    //     title: item.title,
-    //     description: item.description,
-    //     price: item.price,
-    //     uploadedBy: item.uploadedBy
-    // }))
-    res.status(200).json({content,length:content.length})
+    res.status(200).json({data,length:data.length})
 }
 
 const getMyContent = async(req,res) =>{
     const {userId} = req.user
-    const content = await Content.find({uploadedBy:userId}).select('_id title description price images')
+    const content = await Content.find({uploadedBy:userId}).populate('uploadedBy', 'userName profileImage')
     res.status(200).json({content,length: content.length})
 }
 

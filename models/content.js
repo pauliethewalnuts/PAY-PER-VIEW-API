@@ -8,7 +8,7 @@ const ContentSchema = mongoose.Schema({
     },
     description:{
         type: String,
-        maxlength: 100,
+        maxlength: 120,
         default:"Content"
     },
     price:{
@@ -24,7 +24,7 @@ const ContentSchema = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref:"User",
         required: [true,'Please provide the user']
-    },
+    }
 })
 
 ContentSchema.index({ uploadedBy: 1 });

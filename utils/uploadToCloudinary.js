@@ -1,9 +1,9 @@
 const cloudinary = require('../config/cloudinary')
 
-const uploadToCloudinary = (buffer,name,userId) =>{
+const uploadToCloudinary = (buffer,userName,userId) =>{
     return new Promise ((resolve,reject) =>{
         cloudinary.uploader.upload_stream(
-            {folder:`content-api/${name}-${userId}`},
+            {folder:`content-api/${userName}-${userId}`},
             (error,result) =>{
                 if(error){
                     return reject(error)

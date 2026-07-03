@@ -7,6 +7,9 @@ const payment = async (req,res) =>{
     const {userId} = req.user
     const {id} = req.params
     const {paymentCode} = req.body
+    if(!id){
+        throw new BadRequestError('Please provide a purchase Id')
+    }
     if(!paymentCode){
         throw new UnauthorizedError("There is no payment code provided")
     }
