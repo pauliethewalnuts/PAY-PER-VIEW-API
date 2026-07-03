@@ -17,8 +17,12 @@ const PurchaseSchema = mongoose.Schema({
     },
     status:{
         type: String,
-        enum: ['pending','paid','failed'],
+        enum: ['pending','paid','failed','expired','processing'],
         default: 'pending'
+    },
+    paymentAttempts:{
+        type: Number,
+        default: 0
     }
 })
 

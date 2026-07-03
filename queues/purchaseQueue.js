@@ -7,4 +7,6 @@ const connection = {
 
 const purchaseQueue = new Queue('purchaseQueue',{connection})
 
-module.exports = purchaseQueue
+const purchaseExpireQueue = new Queue('purchaseExpireQueue',{connection})
+
+module.exports = {purchaseQueue, purchaseExpireQueue}
