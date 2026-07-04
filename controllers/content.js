@@ -7,6 +7,7 @@ const uploadToCloudinary = require('../utils/uploadToCloudinary')
 const cloudinary = require('../config/cloudinary')
 const { tryCatch } = require('bullmq')
 const CustomAPIError = require('../errors/customError')
+const NotFoundError = require('../errors/NotFoundError')
 
 const createContent = async (req,res) =>{
     const {userId,userName}= req.user
@@ -125,9 +126,31 @@ const getContent = async (req,res) =>{
     res.status(200).json({data,length:data.length})
 }
 
+const getSingleContent = async(req,res) =>{
+    const {id} = req.params
+    const {userId} = req.user
+    if(!id){
+        throw BadRequestError('Please provide the content id')
+    }
+    const content = await Content.findById(id).select('title description price images uploadedBy').populate("uploadedBy","userName profileImage")
+    if(!content){
+        throw new NotFoundError(`The content with ${id} was not found`)
+    }
+    const contentId = content.uploadedBy._id.toString()
+
+    if(contentId === userId.toString()){
+        return res.status(200).json({success: true, content})
+    }
+    const contentData = content.toObject()
+    delete contentData.images
+    
+    res.status(200).json({success: true, content: contentData})
+}
+
+
 const getMyContent = async(req,res) =>{
     const {userId} = req.user
-    const content = await Content.find({uploadedBy:userId}).populate('uploadedBy', 'userName profileImage')
+    const content = await Content.find({uploadedBy:userId}).select('id title description price uploadedBy images').populate('uploadedBy', 'userName profileImage')
     res.status(200).json({content,length: content.length})
 }
 
@@ -154,7 +177,7 @@ const updateContent = async(req,res) =>{
     if(!content){
         throw new BadRequestError(`No content found to update`)
     }
-    res.status(200).json({updatedContent: content})
+    res.status(200).json({success: true,updatedContent: content})
 }
 
 const deleteContent = async(req,res) =>{
@@ -179,4 +202,4 @@ const deleteContent = async(req,res) =>{
     res.status(200).json({success:true})
 }
 
-module.exports = {createContent, getPurchasedContent,getContent,getMyContent,updateContent,deleteContent}
+module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getMyContent,updateContent,deleteContent}
