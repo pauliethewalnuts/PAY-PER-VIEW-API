@@ -187,19 +187,40 @@ const deleteContent = async(req,res) =>{
     const content = await Content.findOne({_id:id,uploadedBy: userId})
 
     if(!content){
-        throw new BadRequestError('No content to delete')
+        throw new BadRequestError('Content not found or you are not authorized to delete it')
     }
-
     for (const images of content.images){
         await cloudinary.uploader.destroy(images.public_id)
     }
+    await content.deleteOne()
 
-    await Content.findOneAndDelete({_id:id,uploadedBy:userId})
-
-    if(!content){
-        throw new BadRequestError('Content not found or not authorized to delete')
-    }
-    res.status(200).json({success:true})
+    res.status(200).json({success:true,msg: 'Content deleted successfully'})
 }
 
-module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getMyContent,updateContent,deleteContent}
+const deleteSingleImage = async(req,res)=>{
+    const {userId} = req.user
+    const {id} = req.params
+    const {public_ids} = req.body
+
+    const content = await Content.findOne({uploadedBy: userId, _id: id})
+    if(!content){
+        throw new BadRequestError('Content not found or you are not authorized to delete it')
+    }
+    if(!public_ids || public_ids.length === 0){
+        throw new BadRequestError('Please provide atleast one image')
+    }
+
+    if(public_ids.length >= content.images.length){
+        throw new BadRequestError('Must have atleast one image in the content')
+    }
+    for (const public_id of public_ids){
+        await cloudinary.uploader.destroy(public_id)
+    }
+    content.images = content.images.filter(image =>
+        !public_ids.includes(image.public_id)
+    )
+    await content.save()
+    return res.status(200).json({success:true,msg: 'Content deleted successfully'})
+}
+
+module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getMyContent,updateContent,deleteContent, deleteSingleImage}
