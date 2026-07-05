@@ -118,24 +118,24 @@ const verifyEmail = async(req,res)=>{
 
 const changePassword = async (req,res)=>{
     const {userId} = req.user
-    const {current_password,new_password} = req.body
-    if(!new_password){
-        throw new BadRequestError('Please provide a new password')
+    const {currentPassword,newPassword} = req.body
+    if(!newPassword || !currentPassword){
+        throw new BadRequestError('Please provide a new password and current password')
     }
     const user = await User.findById(userId)
     if(!user){
         throw new BadRequestError('No account found')
     }
-    const isMatch = await user.comparePasswords(current_password)
+    const isMatch = await user.comparePasswords(currentPassword)
     if(!isMatch){
         throw new BadRequestError('Current password is wrong')
     }
-    const samepassword = await user.comparePasswords(new_password)
+    const samepassword = await user.comparePasswords(newPassword)
     if(samepassword){
         throw new BadRequestError('Use a new password that is different')
     }
 
-    user.password = new_password
+    user.password = newPassword
     await user.save()
     res.status(200).json({success:true,msg:'Password Changed Sucessfully'})
 }
