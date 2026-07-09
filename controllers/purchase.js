@@ -27,7 +27,8 @@ const purchase = async (req,res) =>{
     const purchase = await Purchase.create({purchasedBy: userId,name,content: content._id})
     await purchaseExpireQueue.add('expire-purchase',{purchaseId: purchase._id},{delay: 30* 60 *1000})
 
-    res.status(200).json({purchaseID: purchase._id,status: purchase.status,contentID: purchase.content})
+    // purchaseID: purchase._id,status: purchase.status,contentID: purchase.content
+    res.status(200).json({success: true, msg: `Purchsed the content with Id ${id} your purchase id is ${purchase._id} and the status of this purchase is ${purchase.status}`})
 }
 
 const myPurchase = async(req,res) =>{

@@ -133,6 +133,7 @@ const getSingleContent = async(req,res) =>{
         throw BadRequestError('Please provide the content id')
     }
     const content = await Content.findById(id).select('title description price images uploadedBy').populate("uploadedBy","userName profileImage")
+    
     if(!content){
         throw new NotFoundError(`The content with ${id} was not found`)
     }
@@ -141,12 +142,79 @@ const getSingleContent = async(req,res) =>{
     if(contentId === userId.toString()){
         return res.status(200).json({success: true, content})
     }
-    const contentData = content.toObject()
-    delete contentData.images
+    // const contentData = content.toObject()
+    // delete contentData.images
+    return res.status(403).json({success:false, msg: 'This is for the users that has created this content'})
+    // const contentData = {
+    //     _id: content.id,
+    //     title: content.title,
+    //     description: content.description,
+    //     price: content.price,
+    //     uploadedBy: {
+    //         profileImage:{
+    //             url: content.uploadedBy.profileImage.url
+    //         },
+    //         _id: content.uploadedBy._id,
+    //         userName: content.uploadedBy.userName
+    //     },
+    //     preview: cloudinary.url(content.images[0].public_id,{
+    //         secure: true,
+    //         transformation:[
+    //             {
+    //                 width: 340,
+    //                 height: 220,
+    //                 crop: 'fill'
+    //             },
+    //             {
+    //                 quality: "auto:low"
+    //             }
+    //         ]
+    //     })
+
+    // }
+    
+    // res.status(200).json({success: true, content: contentData})
+}
+
+const getSinglePreviewContent = async(req,res)=>{
+    const {id} = req.params
+
+    const content = await Content.findById(id).select('title description price images uploadedBy').populate("uploadedBy","userName profileImage")
+
+    if(!content){
+        throw new BadRequestError('No content found')
+    }
+
+    const contentData = {
+        _id: content.id,
+        title: content.title,
+        description: content.description,
+        price: content.price,
+        uploadedBy: {
+            profileImage:{
+                url: content.uploadedBy.profileImage.url
+            },
+            _id: content.uploadedBy._id,
+            userName: content.uploadedBy.userName
+        },
+        preview: cloudinary.url(content.images[0].public_id,{
+            secure: true,
+            transformation:[
+                {
+                    width: 340,
+                    height: 220,
+                    crop: 'fill'
+                },
+                {
+                    quality: "auto:low"
+                }
+            ]
+        })
+
+    }
     
     res.status(200).json({success: true, content: contentData})
 }
-
 
 const getMyContent = async(req,res) =>{
     const {userId} = req.user
@@ -223,4 +291,4 @@ const deleteSingleImage = async(req,res)=>{
     return res.status(200).json({success:true,msg: 'Content deleted successfully'})
 }
 
-module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getMyContent,updateContent,deleteContent, deleteSingleImage}
+module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getSinglePreviewContent, getMyContent,updateContent,deleteContent, deleteSingleImage}

@@ -8,7 +8,7 @@ const ContentSchema = mongoose.Schema({
     },
     description:{
         type: String,
-        maxlength: 120,
+        maxlength: 90,
         default:"Content"
     },
     price:{
