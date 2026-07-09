@@ -3,7 +3,7 @@ const BadRequestError = require('../errors/badReqError')
 const NotFoundError = require('../errors/NotFoundError')
 const Purchase = require('../models/purchase')
 require('dotenv').config()
-const {Worker, tryCatch} = require('bullmq')
+const {Worker} = require('bullmq')
 
 const connection = {
     host: 'localhost',
@@ -61,5 +61,25 @@ const startExpire = async()=>{
     }, {connection})
 }
 
+const startDelete = async()=>{
+    try {
+        await connectDB(process.env.MONGO_URI)
+        console.log('Delete Worker connected to DB')
+    } catch (error) {
+        console.log(error)
+    }
+    new Worker('deleteFailedPurchases', async()=>{
+        try {
+            const response = await Purchase.deleteMany({status: { $in: ['failed', 'expired']}}) 
+            console.log(`Deleted ${response.deletedCount} purchases`)
+        } catch (error) {
+            console.log('Failed to dleted purchases')
+            throw error
+        }
+    },{connection})
+}
+
+
 start()
 startExpire()
+startDelete()
