@@ -34,7 +34,7 @@ const payment = async (req,res) =>{
     purchase.status = 'processing'
     await purchase.save()
     await purchaseQueue.add('process-payment',{purchaseId: purchase._id})
-    res.status(200).send('Payment Processing....')
+    res.status(200).json({success: true, msg: 'Payment Processing....'})
 }
 
 const status = async (req,res)=>{

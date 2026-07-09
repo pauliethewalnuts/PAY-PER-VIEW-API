@@ -28,7 +28,7 @@ const purchase = async (req,res) =>{
     await purchaseExpireQueue.add('expire-purchase',{purchaseId: purchase._id},{delay: 30* 60 *1000})
 
     // purchaseID: purchase._id,status: purchase.status,contentID: purchase.content
-    res.status(200).json({success: true, msg: `Purchsed the content with Id ${id} your purchase id is ${purchase._id} and the status of this purchase is ${purchase.status}`})
+    res.status(200).json({success: true, msg: `Purchsed the content with Id ${id} your purchase id is ${purchase._id} and the status of this purchase is ${purchase.status}`, purchaseId: purchase._id})
 }
 
 const myPurchase = async(req,res) =>{
