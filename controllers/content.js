@@ -69,6 +69,17 @@ const getPurchasedContent = async(req,res) =>{
     res.status(200).json({title:content.title,description:content.description,price:content.price,uploadedBy:content.uploadedBy,id:content._id,content: content.images,purchaseId: purchase._id})
 }
 
+const getAllPurchasedContent = async(req,res)=>{
+    const {userId} = req.user
+    const content = await Purchase.find({purchasedBy:userId, status:'paid'}).populate('content')
+
+    if(!content){
+        throw new BadRequestError('You havent purchased any content yet')
+    }
+
+    res.status(200).json({succes:true, content})
+}
+
 const getContent = async (req,res) =>{
     queryFields = {}
     const {title,description,minPrice,maxPrice} = req.query
@@ -219,6 +230,9 @@ const getSinglePreviewContent = async(req,res)=>{
 const getMyContent = async(req,res) =>{
     const {userId} = req.user
     const content = await Content.find({uploadedBy:userId}).select('id title description price uploadedBy images').populate('uploadedBy', 'userName profileImage')
+    if(!content){
+        throw new BadRequestError('You havent uploaded any content yet')
+    }
     res.status(200).json({content,length: content.length})
 }
 
@@ -291,4 +305,4 @@ const deleteSingleImage = async(req,res)=>{
     return res.status(200).json({success:true,msg: 'Content deleted successfully'})
 }
 
-module.exports = {createContent, getPurchasedContent,getContent,getSingleContent, getSinglePreviewContent, getMyContent,updateContent,deleteContent, deleteSingleImage}
+module.exports = {createContent, getPurchasedContent, getAllPurchasedContent, getContent,getSingleContent, getSinglePreviewContent, getMyContent,updateContent,deleteContent, deleteSingleImage}
