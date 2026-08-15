@@ -1,4 +1,4 @@
-const {register,login,verifyEmail,changePassword, forgotPassword, passReset, resendVerification, setProfileImage, changeUserName} = require('../controllers/auth')
+const {register,login,verifyEmail,changePassword, forgotPassword, passReset, resendVerification, setProfileImage, changeUserName, resendVerificationPassword} = require('../controllers/auth')
 const authenticationMiddleware = require('../middleware/authentication')
 const upload = require('../middleware/upload')
 
@@ -13,6 +13,7 @@ router.route('/change-password').patch(authenticationMiddleware,changePassword)
 router.route('/forgot-password').post(forgotPassword)
 router.route('/pass-reset').patch(passReset)
 router.route('/resend-verification').post(resendVerification)
+router.route('/resend-passChange').post(resendVerificationPassword)
 router.route('/profile-image').patch(authenticationMiddleware,upload.single('image'),setProfileImage)
 router.route('/change-username').patch(authenticationMiddleware,changeUserName)
 

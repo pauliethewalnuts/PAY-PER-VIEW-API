@@ -43,7 +43,7 @@ const register = async(req,res) =>{
     if(sentCode){
         throw new BadRequestError('Verification code already sent')
     }
-    const code = Math.floor(100000 + Math.random()*100000).toString()
+    const code = Math.floor(100000 + Math.random()*900000).toString()
 
     await redis.set(`verify:${email}`,JSON.stringify({name,userName,email,password,code}),'EX', 600)
 
@@ -97,7 +97,7 @@ const login = async (req,res)=>{
         throw new UnauthorizedError('Wrong Password')
     }
     const token = user.createJWT()
-    res.json({name:user.name,userName:user.userName,token})
+    res.json({profileImage:user.profileImage.url,userName:user.userName,token})
 }
 
 const verifyEmail = async(req,res)=>{
@@ -146,7 +146,7 @@ const forgotPassword = async(req,res) =>{
     if(!user){
         throw new BadRequestError('Email does not exist')
     }
-    const code = Math.floor(10000 + Math.random() * 10000).toString()
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
     await redis.set(`verify-${email}`,JSON.stringify({email,code}),'EX',600)
 
     await sendPassChange.add('send-password-change-email',{email,code})
@@ -198,6 +198,26 @@ const resendVerification = async(req,res)=>{
     res.status(200).json({msg: "If Email exists, verification code resent"})
 }
 
+const resendVerificationPassword = async(req,res)=>{
+    const {email} = req.body
+    if(!email){
+        throw new BadRequestError('Please enter an email to resend the verification code')
+    }
+    // const user = await User.findOne({email})
+    // if(!user){
+    //     throw new BadRequestError(`No ${email} found`)
+    // }
+    const userInfo = await redis.get(`verify-${email}`)
+    if(!userInfo){
+        throw new BadRequestError('Please try again')
+    }
+    const data = JSON.parse(userInfo)
+    const code = Math.floor(100000 + Math.random()*900000).toString()
+    await redis.set(`verify-${email}`,JSON.stringify({email,code}),'EX',600)
+    await sendPassChange.add('send-verification-email',{email,code})
+    res.status(200).json({msg: "If Email exists, verification code resent"})
+}
+
 const changeUserName = async(req,res)=>{
     const {userId,email} = req.user
     const {new_userName} = req.body
@@ -221,5 +241,5 @@ const changeUserName = async(req,res)=>{
     res.status(200).json({success: true,msg: "User Name changed"})
 }
 
-module.exports = {register,login,verifyEmail,changePassword,forgotPassword,passReset,resendVerification,setProfileImage, changeUserName}
+module.exports = {register,login,verifyEmail,changePassword,forgotPassword,passReset,resendVerification,setProfileImage, changeUserName, resendVerificationPassword}
 

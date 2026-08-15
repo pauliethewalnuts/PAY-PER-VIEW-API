@@ -48,16 +48,21 @@ const getPurchasedContent = async(req,res) =>{
 
     const {id} = req.params
 
-    const content = await Content.findById(id).populate('uploadedBy', "userName")
-
-    if(!content){
-        throw new BadRequestError(`No content with id ${id} Found`)
-    }
-    const purchase = await Purchase.findOne({purchasedBy: userId,content:content._id})
-
+    const purchase = await Purchase.findById(id).populate({path:'content', populate:{path: 'uploadedBy', select: "profileImage _id userName"}})
     if(!purchase){
-        throw new UnauthorizedError('Please finish the payment before accessing the content')
+        throw new UnauthorizedError(`No purchase found with the Id ${id}`)
     }
+
+    // const content = await Content.findById(id).populate('uploadedBy', "userName")
+
+    // if(!content){
+    //     throw new BadRequestError(`No content with id ${id} Found`)
+    // }
+    // const purchase = await Purchase.findOne({purchasedBy: userId,content:content._id})
+
+    // if(!purchase){
+    //     throw new UnauthorizedError('Please finish the payment before accessing the content')
+    // }
 
     if(purchase.purchasedBy.toString() !== userId){
         throw new UnauthorizedError('You did not buy this content, please buy the content')
@@ -66,18 +71,19 @@ const getPurchasedContent = async(req,res) =>{
     if(purchase.status !== 'paid'){
         throw new UnauthorizedError('Please finish the payment before accessing the content')
     }
-    res.status(200).json({title:content.title,description:content.description,price:content.price,uploadedBy:content.uploadedBy,id:content._id,content: content.images,purchaseId: purchase._id})
+    // const contentData = {title:content.title,description:content.description,price:content.price,uploadedBy:content.uploadedBy,id:content._id,content: content.images,purchaseId: purchase._id}
+    res.status(200).json({success: true, content: purchase})
 }
 
 const getAllPurchasedContent = async(req,res)=>{
     const {userId} = req.user
-    const content = await Purchase.find({purchasedBy:userId, status:'paid'}).populate('content')
+    const content = await Purchase.find({purchasedBy:userId, status:'paid'}).select('_id purchasedBy content status').populate({path:'content', populate:{path: 'uploadedBy', select: "profileImage _id userName"}})
 
-    if(!content){
+    if(content.length === 0){
         throw new BadRequestError('You havent purchased any content yet')
     }
 
-    res.status(200).json({succes:true, content})
+    res.status(200).json({success:true, content})
 }
 
 const getContent = async (req,res) =>{
@@ -117,13 +123,14 @@ const getContent = async (req,res) =>{
         preview: cloudinary.url(item.images[0].public_id,{
             secure: true,
             transformation:[
+                // {
+                //     width: 300,
+                //     height: 200,
+                //     crop: 'fill'
+                // },
                 {
-                    width: 340,
-                    height: 220,
-                    crop: 'fill'
-                },
-                {
-                    quality: "auto:low"
+                    quality: "auto:low",
+                    fetch_format: "auto"
                 },
                 // {
                 //     overlay: "watermark_gq3zmr",
@@ -211,11 +218,11 @@ const getSinglePreviewContent = async(req,res)=>{
         preview: cloudinary.url(content.images[0].public_id,{
             secure: true,
             transformation:[
-                {
-                    width: 340,
-                    height: 220,
-                    crop: 'fill'
-                },
+                // {
+                //     width: 340,
+                //     height: 220,
+                //     crop: 'fill'
+                // },
                 {
                     quality: "auto:low"
                 }
