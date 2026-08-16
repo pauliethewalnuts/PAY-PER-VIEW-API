@@ -140,6 +140,9 @@ const getContent = async (req,res) =>{
             ]
         })
     }))
+    // if(data.length === 0){
+    //     res.status(200).json({msg: "No Content found"})
+    // }
     
     res.status(200).json({data,length:data.length})
 }
