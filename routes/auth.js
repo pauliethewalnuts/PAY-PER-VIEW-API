@@ -1,4 +1,4 @@
-const {register,login,verifyEmail,changePassword, forgotPassword, passReset, resendVerification, setProfileImage, changeUserName, resendVerificationPassword} = require('../controllers/auth')
+const {register,login, getUser, verifyEmail,changePassword, forgotPassword, passReset, resendVerification, setProfileImage, changeUserName, resendVerificationPassword} = require('../controllers/auth')
 const authenticationMiddleware = require('../middleware/authentication')
 const upload = require('../middleware/upload')
 
@@ -8,6 +8,7 @@ const router = express.Router()
 
 router.route('/register').post(register)
 router.route('/login').post(login)
+router.route('/user').get(authenticationMiddleware,getUser)
 router.route('/verify-email').post(verifyEmail)
 router.route('/change-password').patch(authenticationMiddleware,changePassword)
 router.route('/forgot-password').post(forgotPassword)

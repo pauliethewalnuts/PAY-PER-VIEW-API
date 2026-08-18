@@ -100,6 +100,18 @@ const login = async (req,res)=>{
     res.json({profileImage:user.profileImage.url,userName:user.userName,token})
 }
 
+const getUser = async(req, res)=>{
+    const {userId} = req.user
+
+    const user = await User.findById(userId)
+
+    if(!user){
+        throw new NotFoundError("User not found")
+    }
+
+    res.status(200).json({success: true, userName: user.userName, profileImage: user.profileImage?.url})
+}
+
 const verifyEmail = async(req,res)=>{
     const {email,code} = req.body
     const data = await redis.get(`verify:${email}`)
@@ -241,5 +253,5 @@ const changeUserName = async(req,res)=>{
     res.status(200).json({success: true,msg: "User Name changed"})
 }
 
-module.exports = {register,login,verifyEmail,changePassword,forgotPassword,passReset,resendVerification,setProfileImage, changeUserName, resendVerificationPassword}
+module.exports = {register,login, getUser, verifyEmail,changePassword,forgotPassword,passReset,resendVerification,setProfileImage, changeUserName, resendVerificationPassword}
 
