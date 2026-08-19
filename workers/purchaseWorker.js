@@ -5,10 +5,11 @@ const Purchase = require('../models/purchase')
 require('dotenv').config()
 const {Worker} = require('bullmq')
 
-const connection = {
-    host: 'localhost',
-    port: 6379
-}
+const Redis = require('ioredis');
+
+const connection = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null
+});
 
 const start = async()=>{
     try {
