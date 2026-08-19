@@ -1,12 +1,11 @@
 require('dotenv').config()
 const {Worker} = require('bullmq')
 const transporter = require('../utils/transporter')
+const Redis = require('ioredis');
 
-connection = {
-    host: 'localhost',
-    port: 6379
-}
-
+const connection = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null
+});
 new Worker('email-queue',async(job) =>{
     const {email,code} = job.data
     await transporter.sendMail({

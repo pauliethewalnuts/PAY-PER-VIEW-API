@@ -7,16 +7,7 @@ const {sendEmailQueue,sendPassChange} = require('../queues/sendEmailQueue');
 const uploadToCloudinary = require('../utils/uploadToCloudinary');
 const cloudinary = require('../config/cloudinary')
 
-// const register = async (req,res)=>{
-//     const user = await User.create(req.body)
-//     const token = user.createJWT()
-//     res.status(201).json({name:user.name,email:user.email,token})
-// }
-
-const redis = new Redis({
-    host: 'localhost',
-    port: 6379
-});
+const redis = new Redis(process.env.REDIS_URL);
 
 const register = async(req,res) =>{
     const {name, userName, email ,password} = req.body
